@@ -10,22 +10,27 @@ int main(int argc, char** argv) {
     int curr = 50;
 
     while (std::getline(file, line)) {
-        // std::cout << line << std::endl;
-        if (line[0] == 'R'){
-            curr = (curr + std::stoi(line.substr(1))) % 100;
-        }
-        else {
-            curr = ((curr - std::stoi(line.substr(1))) + 100) % 100;
-        }
+        int steps = std::stoi(line.substr(1));
 
-        // std::cout << curr << std::endl;
-
-        if (curr == 0){
-            ans++;
+        if (line[0] == 'R') {
+            // going right: we cross 0 each time we go from 99→0
+            // that happens when (curr + k) % 100 == 0 for some k in [1, steps]
+            // i.e., when k = (100 - curr) % 100, then k + 100, k + 200, ...
+            int first_zero = (100 - curr) % 100;
+            if (first_zero == 0) first_zero = 100;  // curr=0 means first zero is at step 100
+            int crossings = (first_zero <= steps) ? (steps - first_zero) / 100 + 1 : 0;
+            ans += crossings;
+            curr = (curr + steps) % 100;
+        } else {
+            // going left: we cross 0 each time we go from 1→0
+            // that happens when (curr - k) % 100 == 0 for some k in [1, steps]
+            int first_zero = curr;
+            if (first_zero == 0) first_zero = 100;  // curr=0 means first zero is at step 100
+            int crossings = (first_zero <= steps) ? (steps - first_zero) / 100 + 1 : 0;
+            ans += crossings;
+            curr = ((curr - steps) % 100 + 100) % 100;
         }
     }
-
     std::cout << ans << std::endl;
-
     return 0;
 }
