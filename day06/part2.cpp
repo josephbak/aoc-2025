@@ -7,20 +7,7 @@
 #include <vector>
 #include <numeric>
 
-long long arith(char op, std::vector<long long>& vec) {
-    // for (size_t i = 0; i < vec.size(); i++) {
-    //     std::cout << i << ": " << vec[i] << "\n";
-    // }
-
-    if (op == '+') {
-        return std::accumulate(vec.begin(), vec.end(), 0LL);
-    }
-    return std::accumulate(vec.begin(), vec.end(), 1LL, std::multiplies<int>());
-}
-
-
 int main(int argc, char** argv) {
-
     std::vector<std::vector<char>> matrix;
     std::ifstream file(argv[1]);
     std::string line;
@@ -29,94 +16,66 @@ int main(int argc, char** argv) {
         matrix.push_back(std::vector<char>(line.begin(), line.end()));
     }
 
-    size_t rows = matrix.size();
-    size_t cols = matrix[0].size();  // assumes non-empty, equal-length rows
+    int rows = matrix.size();
+    int cols = matrix[0].size();
 
-    std::cout << "rows: " << rows << ", cols: " << cols << std::endl;
-
-    for (size_t row = 0; row < rows; ++row) {
-        for (size_t col = 0; col < cols; ++col) {
-            std::cout << matrix[row][col];
+    // Find all operator positions in last row
+    std::vector<int> op_positions;
+    for (int c = 0; c < cols; c++) {
+        if (matrix[rows-1][c] == '+' || matrix[rows-1][c] == '*') {
+            op_positions.push_back(c);
         }
-        std::cout << '\n';
     }
-    std::cout << '\n';
-
 
     long long ans = 0;
 
-    std::vector<long long> tmp;
-    char curr_op = ' ';
-    long long curr_val = 0;
+    // Process each operator group
+    for (size_t i = 0; i < op_positions.size(); i++) {
+        int op_col = op_positions[i];
+        char op = matrix[rows-1][op_col];
+        
+        // Column range: from this operator to just before next operator
+        int start_col = op_col;
+        int end_col = (i + 1 < op_positions.size()) 
+                      ? op_positions[i+1] - 1 
+                      : cols - 1;
 
-    int curr_col = cols - 1; // last column
-    int curr_row = rows - 1; // last row
-
-    while (curr_col >= 0) {
-
-        curr_row = rows - 2;
-
-        std::cout << rows - 1 << std::endl;
-
-        if ((matrix[rows-1][curr_col] == '+') || (matrix[rows-1][curr_col] == '*')) {
-        std::cout << "hihihihi" << std::endl;
-
-            curr_op = matrix[rows-1][curr_col]; // get the operation
-
-            while (curr_row >= 0) {
-                if (matrix[curr_row][curr_col] != ' ') {
-                    curr_val = static_cast<long long>(std::pow(10, rows - 2 - curr_row))*(matrix[curr_row][curr_col]) + curr_val;
+        // Collect numbers from each column
+        std::vector<long long> nums;
+        
+        for (int c = start_col; c <= end_col; c++) {
+            long long num = 0;
+            bool has_digit = false;
+            
+            // Read top to bottom
+            for (int r = 0; r < rows - 1; r++) {
+                if (c < (int)matrix[r].size() && matrix[r][c] != ' ') {
+                    num = num * 10 + (matrix[r][c] - '0');
+                    has_digit = true;
                 }
-
-                // if (curr_row == 0) {
-                //     break;
-                // }
-
-                curr_row--;
             }
-
-            tmp.push_back(curr_val);
-
-            curr_op = ' '; // reset
-            curr_val = 0; // reset
-
-            for (size_t i = 0; i < tmp.size(); i++) {
-                std::cout << i << ": " << tmp[i] << "\n";
+            
+            if (has_digit) {
+                nums.push_back(num);
             }
-
-            ans += arith(curr_op, tmp);
-            // tmp = {}; // empty the vector
-            tmp.clear();
-
-            curr_col -= 2; // 2 cols jump
-        } else {
-            // skip the last row since it's empty
-
-            std::cout << "hihih" << std::endl;
-
-            while (curr_row >= 0) {
-            // std::cout << "sdsafdasf" << std::endl;
-            std::cout << "curr row: " << curr_row << ", curr_col: " << curr_col << std::endl;
-
-                if (matrix[curr_row][curr_col] != ' ') {
-                    curr_val = static_cast<long long>(std::pow(10, rows - 2 - curr_row))*(matrix[curr_row][curr_col]) + curr_val;
-                }
-
-                // if (curr_row == 0) {
-                //     break;
-                // }
-                curr_row--;
-            }
-            std::cout << "do we get here" << std::endl;
-
-            tmp.push_back(curr_val);
-            curr_col -= 1;
-
-            std::cout << "do we get here" << std::endl;
         }
 
+        // Apply operator
+        long long result;
+        if (op == '+') {
+            result = std::accumulate(nums.begin(), nums.end(), 0LL);
+        } else {
+            result = std::accumulate(nums.begin(), nums.end(), 1LL, std::multiplies<long long>());
+        }
+
+        // debugging
+        // std::cout << "Op '" << op << "' cols " << start_col << "-" << end_col << ": ";
+        // for (auto n : nums) std::cout << n << " ";
+        // std::cout << "= " << result << "\n";
+
+        ans += result;
     }
 
-    std::cout << "count is: " << ans << std::endl;
+    std::cout << "Final answer: " << ans << "\n";
     return 0;
 }
