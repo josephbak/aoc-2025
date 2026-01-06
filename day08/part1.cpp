@@ -52,9 +52,13 @@ public:
     int getSize(int x) { return size_[find(x)]; }
 };
 
-int main(int argc, char** argv) {
+int main(int argc, char* argv[]) {
 
-    std::ifstream file(argv[1]);
+    std::string filename = (argc > 1) ? argv[1] : "input.txt";
+    int k = (argc > 2) ? std::stoi(argv[2]) : 1000;
+    int top_n = (argc > 3) ? std::stoi(argv[3]) : 3;
+
+    std::ifstream file(filename);
     std::string line;
 
     std::vector<Point> pts;
@@ -74,7 +78,6 @@ int main(int argc, char** argv) {
     // }
 
     int n = pts.size();
-    int k = 1000;
 
     std::vector<Edge> edges;
     for (int i = 0; i < n; i++) {
