@@ -72,6 +72,7 @@ int solve(uint64_t target, const std::vector<uint64_t>& buttons) {
     int best = INT_MAX;  // need <climits> or use a large number
     
     // Enumerate all subsets: 0 to 2^m - 1
+    // a mask represents a combination of buttons
     for (uint64_t mask = 0; mask < (1ULL << m); mask++) {
         uint64_t state = 0;
         int presses = 0;
